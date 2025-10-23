@@ -55,7 +55,7 @@
 	};
 
 	info.update = function (props) {
-		const contents = props ? `<b>${props.name}</b><br />${props.density} people / mi<sup>2</sup>` : 'Hover over a state';
+		const contents = props ? `<b>${props.nom_region}</b><br />${props.Populatio} people / mi<sup>2</sup>` : 'Hover over a state';
 		this._div.innerHTML = `<h4>US Population Density</h4>${contents}`;
 	};
 
@@ -64,13 +64,11 @@
 
 	// get color depending on population density value
 	function getColor(d) {
-		return d > 1000 ? '#800026' :
-			d > 500  ? '#BD0026' :
-			d > 200  ? '#E31A1C' :
-			d > 100  ? '#FC4E2A' :
-			d > 50   ? '#FD8D3C' :
-			d > 20   ? '#FEB24C' :
-			d > 10   ? '#FED976' : '#FFEDA0';
+		return d > 4807496  ? '#2B83BA' :
+		  	   d > 3626305  ? '#ABDDA4' :
+			   d > 2387119  ? '#FFFFBF' :
+			   d > 691947   ? '#FDAE61' :
+			   d > 219965   ? '#D7191C' : '#D7191C';
 	}
 
 	function style(feature) {
@@ -80,7 +78,7 @@
 			color: 'white',
 			dashArray: '3',
 			fillOpacity: 0.7,
-			fillColor: getColor(feature.properties.density)
+			fillColor: getColor(feature.properties.Populatio)
 		};
 	}
 
