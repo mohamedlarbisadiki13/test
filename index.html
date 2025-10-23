@@ -51,9 +51,22 @@
 	};
 
 	info.update = function (props) {
-		// CORRIGÉ: Utilisation des noms de propriété exacts
-		const contents = props ? `<b>${props.nom_region}</b><br />${props[" Populatio"].toLocaleString('fr-FR')} habitants` : 'Survolez une région';
-		this._div.innerHTML = `<h4>Densité de population</h4>${contents}`;
+		// Titre de l'infobulle
+		const title = `<h4>Population Régionale</h4>`;
+		
+		let contents = 'Survolez une région'; // Texte par défaut
+
+		// Si on survole une région (props existe)
+		if (props) {
+			// On construit le texte avec plusieurs lignes
+			contents = `<b>${props.nom_region}</b><br />` +
+			           `Population : <b>${props[" Populatio"].toLocaleString('fr-FR')}</b><br />` +
+			           `Marocains : ${props[" Marocains"].toLocaleString('fr-FR')}<br />` +
+			           `Etrangers : ${props.Etrangers.toLocaleString('fr-FR')}<br />` +
+			           `Ménages : ${props[" Menages"].toLocaleString('fr-FR')}`;
+		}
+
+		this._div.innerHTML = title + contents;
 	};
 	info.addTo(map);
 
