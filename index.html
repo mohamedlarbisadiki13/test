@@ -1,87 +1,160 @@
 <!DOCTYPE html>
-<html lang="fr"> <head>
-	<base target="_top">
+<html lang="fr">
+<head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<base target="_top">
 	
-	<title>Tutoriel Choroplèthe - Leaflet</title> <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+	<title>Population des Régions du Maroc</title>
+	
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 	<style>
+		/* --- Structure de la page --- */
 		html, body {
 			height: 100%;
 			margin: 0;
+			font-family: Arial, Helvetica, sans-serif;
+			background-color: #f4f4f4; /* Fond gris clair pour faire ressortir le cadre */
 		}
-		.leaflet-container {
-			height: 400px;
-			width: 600px;
-			max-width: 100%;
-			max-height: 100%;
+
+		header {
+			padding: 20px;
+			text-align: center;
+			color: #333;
+		}
+
+		/* --- Le "Cadre" pour la carte --- */
+		.map-container {
+			max-width: 1200px; /* Largeur maximale */
+			margin: 0 auto 20px auto; /* Centre le conteneur */
+			background: #fff;
+			border: 1px solid #ddd;
+			border-radius: 8px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+			overflow: hidden; /* Pour que les coins de la carte soient aussi arrondis */
+		}
+
+		/* --- La carte --- */
+		#map { 
+			width: 100%; /* La carte prend 100% de la largeur de son "cadre" */
+			height: 600px; /* Hauteur fixe */
+		}
+
+		footer {
+			text-align: center;
+			padding: 15px;
+			font-size: 0.9em;
+			color: #777;
+		}
+
+
+		/* --- Styles des contrôles Leaflet --- */
+		.info { 
+			padding: 6px 8px; 
+			font: 14px/16px Arial, Helvetica, sans-serif; 
+			background: white; 
+			background: rgba(255,255,255,0.9); 
+			box-shadow: 0 0 15px rgba(0,0,0,0.2); 
+			border-radius: 5px; 
+		} 
+		.info h4 { 
+			margin: 0 0 5px; 
+			color: #777; 
+			font-size: 1.1em;
+		}
+		.info b {
+			color: #333;
+		}
+
+		.legend { 
+			text-align: left; 
+			line-height: 18px; 
+			color: #555; 
+		} 
+		.legend i { 
+			width: 18px; 
+			height: 18px; 
+			float: left; 
+			margin-right: 8px; 
+			opacity: 0.8; 
 		}
 	</style>
-
-	<style>#map { width: 800px; height: 500px; }
-.info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
-.legend { text-align: left; line-height: 18px; color: #555; } .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }</style>
 </head>
+
 <body>
 
-<div id='map'></div>
+<header>
+	<h1>Population des Régions du Maroc (2014)</h1>
+</header>
+
+<main class="map-container">
+	<div id='map'></div>
+</main>
+
+<footer>
+	Créé avec Leaflet.js | Données de population (fictives ou à sourcer)
+</footer>
+
 
 <script type="text/javascript" src="population.js"></script>
 
+
 <script type="text/javascript">
 
-	const map = L.map('map').setView([33, -6], 4);
+	// Initialisation de la carte
+	const map = L.map('map').setView([33, -6], 5); // Zoom '5' pour mieux voir le Maroc
 
+	// Ajout du fond de carte OpenStreetMap
 	const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
 
-	// Contrôle affichant les informations de la région au survol
+	// --- Contrôle d'information (Infobulle au survol) ---
 	const info = L.control();
 
 	info.onAdd = function (map) {
-		this._div = L.DomUtil.create('div', 'info');
+		this._div = L.DomUtil.create('div', 'info'); // Crée un div avec la classe 'info'
 		this.update();
 		return this._div;
 	};
 
+	// Fonction pour mettre à jour l'infobulle
 	info.update = function (props) {
-		// Titre de l'infobulle
 		const title = `<h4>Population Régionale</h4>`;
-		
 		let contents = 'Survolez une région'; // Texte par défaut
 
-		// Si on survole une région (props existe)
 		if (props) {
-			// On construit le texte avec plusieurs lignes
+			// Construit le HTML avec les données de la région survolée
+			// CORRIGÉ: Utilise la notation [] pour les propriétés avec des espaces
 			contents = `<b>${props.nom_region}</b><br />` +
-			           `Population : <b>${props[" Populatio"].toLocaleString('fr-FR')}</b><br />` +
-			           `Marocains : ${props[" Marocains"].toLocaleString('fr-FR')}<br />` +
-			           `Etrangers : ${props.Etrangers.toLocaleString('fr-FR')}<br />` +
-			           `Ménages : ${props[" Menages"].toLocaleString('fr-FR')}`;
+					   `Population : <b>${props[" Populatio"].toLocaleString('fr-FR')}</b><br />` +
+					   `Marocains : ${props[" Marocains"].toLocaleString('fr-FR')}<br />` +
+					   `Etrangers : ${props.Etrangers.toLocaleString('fr-FR')}<br />` +
+					   `Ménages : ${props[" Menages"].toLocaleString('fr-FR')}`;
 		}
-
 		this._div.innerHTML = title + contents;
 	};
+
 	info.addTo(map);
 
 
-	// Obtient la couleur en fonction de la valeur de population
+	// --- Style et Couleurs (Choroplèthe) ---
+
+	// Fonction pour définir la couleur selon la population
 	function getColor(d) {
-		// CORRIGÉ: Suppression des espaces insécables (SyntaxError)
-		// CORRIGÉ: Simplification de la logique redondante (les deux derniers étaient identiques)
 		return d > 4807496 ? '#2B83BA' :
 		       d > 3626305 ? '#ABDDA4' :
 		       d > 2387119 ? '#FFFFBF' :
 		       d > 691947  ? '#FDAE61' :
-		                     '#D7191C'; // Tout ce qui est <= 691947
+		                     '#D7191C'; // Moins de 691 947
 	}
 
+	// Fonction de style pour les polygones GeoJSON
 	function style(feature) {
 		return {
 			weight: 2,
@@ -89,11 +162,15 @@
 			color: 'white',
 			dashArray: '3',
 			fillOpacity: 0.7,
-			// CORRIGÉ: Utilisation du nom exact de la propriété avec crochets
+			// CORRIGÉ: Utilise la notation [] pour la propriété avec espace
 			fillColor: getColor(feature.properties[" Populatio"])
 		};
 	}
 
+	// --- Interactivité ---
+	let geojson; // Variable pour stocker la couche geojson
+
+	// Met en surbrillance la région au survol
 	function highlightFeature(e) {
 		const layer = e.target;
 
@@ -103,27 +180,22 @@
 			dashArray: '',
 			fillOpacity: 0.7
 		});
-
 		layer.bringToFront();
-
-		info.update(layer.feature.properties);
+		info.update(layer.feature.properties); // Met à jour l'infobulle
 	}
 
-	// La variable 'population' doit être définie dans 'population.js'
-	const geojson = L.geoJson(population, {
-		style,
-		onEachFeature
-	}).addTo(map);
-
+	// Réinitialise le style quand la souris quitte la région
 	function resetHighlight(e) {
 		geojson.resetStyle(e.target);
-		info.update();
+		info.update(); // Vide l'infobulle
 	}
 
+	// Zoome sur la région au clic
 	function zoomToFeature(e) {
 		map.fitBounds(e.target.getBounds());
 	}
 
+	// Applique les écouteurs d'événements à chaque région
 	function onEachFeature(feature, layer) {
 		layer.on({
 			mouseover: highlightFeature,
@@ -132,26 +204,33 @@
 		});
 	}
 
-	// CORRIGÉ: Attribution générique
-	map.attributionControl.addAttribution('Données de population &copy; Source à définir');
+	// Ajout de la couche GeoJSON à la carte
+	// La variable 'population' vient du fichier 'population.js'
+	geojson = L.geoJson(population, {
+		style: style,
+		onEachFeature: onEachFeature
+	}).addTo(map);
 
 
+	// --- Légende ---
 	const legend = L.control({position: 'bottomright'});
 
 	legend.onAdd = function (map) {
-
 		const div = L.DomUtil.create('div', 'info legend');
-		// CORRIGÉ: Les seuils de la légende correspondent MAINTENANT à la fonction getColor
+		
+		// CORRIGÉ: Les seuils de la légende DOIVENT correspondre à ceux de getColor()
 		const grades = [0, 691947, 2387119, 3626305, 4807496];
-		const labels = ['<strong>Population</strong><br>']; // Ajout d'un titre
-		let from, to;
+		const labels = ['<strong>Population</strong><br>'];
 
+		// Génère les labels de la légende
 		for (let i = 0; i < grades.length; i++) {
-			from = grades[i];
-			to = grades[i + 1];
+			const from = grades[i];
+			const to = grades[i + 1];
 
-			// Utilise (from + 1) pour obtenir la couleur de la plage correcte
-			labels.push(`<i style="background:${getColor(from + 1)}"></i> ${from}${to ? `&ndash;${to}` : '+'}`);
+			labels.push(
+				`<i style="background:${getColor(from + 1)}"></i> ` +
+				`${from.toLocaleString('fr-FR')}${to ? `&ndash;${to.toLocaleString('fr-FR')}` : '+'}`
+			);
 		}
 
 		div.innerHTML = labels.join('<br>');
