@@ -51,11 +51,10 @@
 	};
 
 	info.update = function (props) {
-		// CORRIGÉ: Utilisation de 'Population' (au lieu de 'Populatio') et textes génériques/français
-		const contents = props ? `<b>${props.nom_region}</b><br />${props. Populatio} habitants` : 'Survolez une région';
+		// CORRIGÉ: Utilisation des noms de propriété exacts
+		const contents = props ? `<b>${props.nom_region}</b><br />${props[" Populatio"].toLocaleString('fr-FR')} habitants` : 'Survolez une région';
 		this._div.innerHTML = `<h4>Densité de population</h4>${contents}`;
 	};
-
 	info.addTo(map);
 
 
@@ -77,8 +76,8 @@
 			color: 'white',
 			dashArray: '3',
 			fillOpacity: 0.7,
-			// CORRIGÉ: Utilisation de 'Population' (au lieu de 'Populatio')
-			fillColor: getColor(feature.properties. Populatio)
+			// CORRIGÉ: Utilisation du nom exact de la propriété avec crochets
+			fillColor: getColor(feature.properties[" Populatio"])
 		};
 	}
 
